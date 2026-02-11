@@ -8,15 +8,18 @@ export async function GET() {
 
     const notion = createNotionClient(token);
 
-    const response = await notion.dataSources.query({
-      data_source_id: databaseId,
-      page_size: 5,
-    });
+    // retrieve datasource from database
+    // Change your database retrieval line to this:
+    const response = await notion.databases.retrieve({
+      database_id: databaseId,
+    }) as any; // The 'as any' tells TypeScript: "I know what I'm doing, ignore the missing property error"
 
     return NextResponse.json({
       success: true,
-      results: response.results,
+      // Now this won't show a red underline anymore
+      results: response.data_sources || [], 
     });
+    
   } catch (error: any) {
     return NextResponse.json({
       success: false,
