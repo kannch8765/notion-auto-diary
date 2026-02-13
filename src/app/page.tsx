@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import SetupWizard from "@/components/setup-wizard/SetupWizard";
 
 type DataSourceRef = {
   id: string;
@@ -138,92 +139,97 @@ export default function Home() {
   }
 
   return (
-    <div className="p-10">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={loadDatabases}
-          disabled={loadingDatabases}
-          className="px-4 py-2 bg-black text-white rounded disabled:opacity-60"
-        >
-          {loadingDatabases ? "Loading…" : "Load Databases"}
-        </button>
+    <div className="p-6 md:p-10">
+      <SetupWizard />
 
-        {databases.length > 0 && (
-          <select
-            value={selectedDatabaseId}
-            onChange={(e) => {
-              const id = e.target.value;
-              setSelectedDatabaseId(id);
-              if (id) void loadDataSources(id);
-            }}
-            className="border rounded px-3 py-2"
+      <div className="mt-10 rounded-xl border border-zinc-200 p-4">
+        <div className="text-sm font-semibold">Debug Panel (optional)</div>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <button
+            onClick={loadDatabases}
+            disabled={loadingDatabases}
+            className="px-4 py-2 bg-black text-white rounded disabled:opacity-60"
           >
-            {databases.map((db) => (
-              <option key={db.envKey} value={db.databaseId}>
-                {db.envKey} ({db.databaseId})
-              </option>
-            ))}
-          </select>
-        )}
+            {loadingDatabases ? "Loading…" : "Load Databases"}
+          </button>
 
-        {dataSources.length > 0 && (
-          <select
-            value={selectedDataSourceId}
-            onChange={(e) => {
-              const id = e.target.value;
-              setSelectedDataSourceId(id);
-              if (id) void loadProperties(id);
-            }}
-            className="border rounded px-3 py-2"
-          >
-            <option value="">Select a data source…</option>
-            {dataSources.map((ds) => (
-              <option key={ds.id} value={ds.id}>
-                {ds.name} ({ds.id})
-              </option>
-            ))}
-          </select>
-        )}
-
-        {loadingDataSources && <div className="text-sm text-gray-600">Loading data sources…</div>}
-
-        {loadingProperties && <div className="text-sm text-gray-600">Loading properties…</div>}
-      </div>
-
-      {error && (
-        <div className="mt-4 p-3 border rounded bg-red-50 text-red-800 text-sm">{error}</div>
-      )}
-
-      {properties.length > 0 && (
-        <div className="mt-6 p-4 border rounded bg-gray-50">
-          <div className="font-bold mb-3">Available Properties</div>
-
-          <div className="flex items-center gap-3 mb-4">
-            <div className="text-sm text-gray-700">Use this property as input:</div>
+          {databases.length > 0 && (
             <select
-              value={selectedPropertyKey}
-              onChange={(e) => setSelectedPropertyKey(e.target.value)}
+              value={selectedDatabaseId}
+              onChange={(e) => {
+                const id = e.target.value;
+                setSelectedDatabaseId(id);
+                if (id) void loadDataSources(id);
+              }}
               className="border rounded px-3 py-2"
             >
-              {properties.map((p) => (
-                <option key={p.key} value={p.key}>
-                  {p.name} [{p.type}]
+              {databases.map((db) => (
+                <option key={db.envKey} value={db.databaseId}>
+                  {db.envKey} ({db.databaseId})
                 </option>
               ))}
             </select>
-          </div>
+          )}
 
-          <ul className="list-disc pl-5 space-y-1">
-            {properties.map((p) => (
-              <li key={p.key} className="text-sm">
-                <span className="font-mono">{p.name}</span> <span className="text-gray-600">({p.type})</span>
-              </li>
-            ))}
-          </ul>
+          {dataSources.length > 0 && (
+            <select
+              value={selectedDataSourceId}
+              onChange={(e) => {
+                const id = e.target.value;
+                setSelectedDataSourceId(id);
+                if (id) void loadProperties(id);
+              }}
+              className="border rounded px-3 py-2"
+            >
+              <option value="">Select a data source…</option>
+              {dataSources.map((ds) => (
+                <option key={ds.id} value={ds.id}>
+                  {ds.name} ({ds.id})
+                </option>
+              ))}
+            </select>
+          )}
+
+          {loadingDataSources && <div className="text-sm text-gray-600">Loading data sources…</div>}
+
+          {loadingProperties && <div className="text-sm text-gray-600">Loading properties…</div>}
         </div>
-      )}
 
-      <pre className="mt-6 text-xs whitespace-pre-wrap">{JSON.stringify(rawResult, null, 2)}</pre>
+        {error && (
+          <div className="mt-4 p-3 border rounded bg-red-50 text-red-800 text-sm">{error}</div>
+        )}
+
+        {properties.length > 0 && (
+          <div className="mt-6 p-4 border rounded bg-gray-50">
+            <div className="font-bold mb-3">Available Properties</div>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="text-sm text-gray-700">Use this property as input:</div>
+              <select
+                value={selectedPropertyKey}
+                onChange={(e) => setSelectedPropertyKey(e.target.value)}
+                className="border rounded px-3 py-2"
+              >
+                {properties.map((p) => (
+                  <option key={p.key} value={p.key}>
+                    {p.name} [{p.type}]
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <ul className="list-disc pl-5 space-y-1">
+              {properties.map((p) => (
+                <li key={p.key} className="text-sm">
+                  <span className="font-mono">{p.name}</span> <span className="text-gray-600">({p.type})</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <pre className="mt-6 text-xs whitespace-pre-wrap">{JSON.stringify(rawResult, null, 2)}</pre>
+      </div>
     </div>
   );
 }

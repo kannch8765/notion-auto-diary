@@ -4,7 +4,7 @@ import { getConfiguredNotionDatabases } from "@/lib/notion-env";
 
 export async function GET(req: Request) {
   try {
-    const token = process.env.NOTION_TOKEN;
+    const token = req.headers.get("x-notion-token") || process.env.NOTION_TOKEN;
     const url = new URL(req.url);
     const requestedDatabaseId = (url.searchParams.get("databaseId") ?? "").trim();
 

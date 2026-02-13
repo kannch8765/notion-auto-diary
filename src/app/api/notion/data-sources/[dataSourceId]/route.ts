@@ -4,11 +4,11 @@ import { createNotionClient } from "@/lib/notion";
 import { richTextToPlainText } from "@/lib/notion-text";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   context: { params: Promise<{ dataSourceId: string }> },
 ) {
   try {
-    const token = process.env.NOTION_TOKEN;
+    const token = req.headers.get("x-notion-token") || process.env.NOTION_TOKEN;
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Missing NOTION_TOKEN" },
