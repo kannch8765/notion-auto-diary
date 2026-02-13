@@ -1,0 +1,26 @@
+{
+  "notion_token": "",
+  "gemini_api_key": "",
+  "output_database_ids": {
+    "daily": "",
+    "weekly": ""
+  },
+  "source_databases": [
+    {
+      "database_id": "2cd469c829a2808fba7df13600589a12",
+      "nickname": "job hunting",
+      "selected_properties": [
+        {
+          "name": "Title",
+          "type": "title"
+        },
+        {
+          "name": "Notes",
+          "type": "rich_text"
+        }
+      ],
+      "enabled": true
+    }
+  ]
+}
+
