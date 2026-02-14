@@ -6,8 +6,9 @@ import type { AppConfig, NotionPropertyType } from "@/lib/config-types";
 import { Callout } from "./Callout";
 import { StepPill } from "./StepPill";
 import { cx, getNotionLikeThemeClasses } from "./theme";
-import type { DbPropertyState, WizardStep } from "./types";
+import type { DbPropertyState, RuntimeDateSelection, WizardStep } from "./types";
 import { StepDatabases } from "./steps/StepDatabases";
+import { StepDashboard } from "./steps/StepDashboard";
 import { StepProperties } from "./steps/StepProperties";
 import { StepReview } from "./steps/StepReview";
 import { StepTokens } from "./steps/StepTokens";
@@ -41,6 +42,8 @@ function safeConfigFromApi(value: unknown): AppConfig | null {
       database_id: typeof d.database_id === "string" ? d.database_id : "",
       nickname: typeof d.nickname === "string" ? d.nickname : "",
       enabled: typeof d.enabled === "boolean" ? d.enabled : true,
+      include_page_content: typeof d.include_page_content === "boolean" ? d.include_page_content : false,
+      anchor_date_property: typeof d.anchor_date_property === "string" ? d.anchor_date_property : "",
       selected_properties: Array.isArray(d.selected_properties)
         ? d.selected_properties
             .filter((p): p is Record<string, unknown> => isObject(p))
@@ -66,11 +69,12 @@ function getStepTitle(step: WizardStep) {
   if (step === 0) return "🔑 Tokens";
   if (step === 1) return "🗃️ Source Databases";
   if (step === 2) return "🧩 Select Properties";
-  return "✅ Review & Save";
+  if (step === 3) return "✅ Review & Save";
+  return "📅 Dashboard";
 }
 
 export default function SetupWizard() {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
   const t = useMemo(() => getNotionLikeThemeClasses(isDark), [isDark]);
 
   const [step, setStep] = useState<WizardStep>(0);
@@ -80,6 +84,10 @@ export default function SetupWizard() {
   const [propertyStateByDbId, setPropertyStateByDbId] = useState<Record<string, DbPropertyState>>({});
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [runtimeSelection, setRuntimeSelection] = useState<RuntimeDateSelection>({
+    mode: "single",
+    date: new Date().toISOString().slice(0, 10),
+  });
 
   const doneTokens = config.notion_token.trim().length > 0;
   const doneDatabases = config.source_databases.length > 0 && config.source_databases.every((d) => d.database_id.trim().length > 0);
@@ -89,7 +97,12 @@ export default function SetupWizard() {
       .filter((d) => d.enabled)
       .every((d) => d.selected_properties.length > 0);
 
-  const canGoNext = (step === 0 && doneTokens) || (step === 1 && doneDatabases) || (step === 2 && doneProperties) || step === 3;
+  const canGoNext =
+    (step === 0 && doneTokens) ||
+    (step === 1 && doneDatabases) ||
+    (step === 2 && doneProperties) ||
+    (step === 3 && saveSuccess) ||
+    step === 4;
 
   useEffect(() => {
     let active = true;
@@ -116,13 +129,11 @@ export default function SetupWizard() {
 
   function goNext() {
     setBannerError("");
-    setSaveSuccess(false);
-    setStep((prev) => (prev < 3 ? ((prev + 1) as WizardStep) : prev));
+    setStep((prev) => (prev < 4 ? ((prev + 1) as WizardStep) : prev));
   }
 
   function goBack() {
     setBannerError("");
-    setSaveSuccess(false);
     setStep((prev) => (prev > 0 ? ((prev - 1) as WizardStep) : prev));
   }
 
@@ -159,6 +170,7 @@ export default function SetupWizard() {
     { label: "Databases", done: doneDatabases },
     { label: "Properties", done: doneProperties },
     { label: "Save", done: saveSuccess },
+    { label: "Dashboard", done: false },
   ];
 
   return (
@@ -219,6 +231,13 @@ export default function SetupWizard() {
                 {step === 3 && (
                   <StepReview config={config} isDark={isDark} saving={saving} saveSuccess={saveSuccess} onSave={() => void save()} />
                 )}
+                {step === 4 && (
+                  <StepDashboard
+                    isDark={isDark}
+                    selection={runtimeSelection}
+                    setSelection={setRuntimeSelection}
+                  />
+                )}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -227,12 +246,12 @@ export default function SetupWizard() {
             <button type="button" className={t.buttonSecondary} onClick={goBack} disabled={step === 0 || saving}>
               ← Back
             </button>
-            <div className={cx("text-xs", t.subtleText)}>Step {step + 1} / 4</div>
+            <div className={cx("text-xs", t.subtleText)}>Step {step + 1} / 5</div>
             <button
               type="button"
               className={t.buttonPrimary}
               onClick={goNext}
-              disabled={!canGoNext || step === 3 || saving}
+              disabled={!canGoNext || step === 4 || saving}
             >
               Next →
             </button>

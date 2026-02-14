@@ -26,6 +26,8 @@ function validateAppConfig(value: unknown): value is AppConfig {
     if (typeof db.database_id !== "string") return false;
     if (typeof db.nickname !== "string") return false;
     if (typeof db.enabled !== "boolean") return false;
+    if (db.include_page_content !== undefined && typeof db.include_page_content !== "boolean") return false;
+    if (db.anchor_date_property !== undefined && typeof db.anchor_date_property !== "string") return false;
     if (!Array.isArray(db.selected_properties)) return false;
     for (const p of db.selected_properties) {
       if (!isObject(p)) return false;
@@ -93,4 +95,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

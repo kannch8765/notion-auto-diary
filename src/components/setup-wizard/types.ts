@@ -1,6 +1,10 @@
 import type { NotionPropertyType } from "@/lib/config-types";
 
-export type WizardStep = 0 | 1 | 2 | 3;
+export type WizardStep = 0 | 1 | 2 | 3 | 4;
+
+export type RuntimeDateSelection =
+  | { mode: "single"; date: string }
+  | { mode: "range"; start: string; end: string };
 
 export type NotionDataSourceRef = {
   id: string;
@@ -20,4 +24,3 @@ export type DbPropertyState = {
   loading: boolean;
   error: string;
 };
-

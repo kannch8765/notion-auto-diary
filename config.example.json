@@ -19,8 +19,9 @@
           "type": "rich_text"
         }
       ],
-      "enabled": true
+      "enabled": true,
+      "include_page_content": false,
+      "anchor_date_property": ""
     }
   ]
 }
-

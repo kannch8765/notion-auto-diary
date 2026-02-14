@@ -38,6 +38,12 @@ export function StepReview({
               <div className={cx("mt-2 text-xs", t.subtleText)}>
                 Selected: {db.selected_properties.map((p) => p.name).join(", ") || "(none)"}
               </div>
+              <div className={cx("mt-1 text-xs", t.subtleText)}>
+                Filter by: {db.anchor_date_property || "(none)"}
+              </div>
+              <div className={cx("mt-1 text-xs", t.subtleText)}>
+                Include Page Content: {db.include_page_content ? "Yes" : "No"}
+              </div>
             </div>
           ))}
         </div>
@@ -64,4 +70,3 @@ export function StepReview({
     </div>
   );
 }
-

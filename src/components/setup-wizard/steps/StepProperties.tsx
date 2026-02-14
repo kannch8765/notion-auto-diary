@@ -35,6 +35,10 @@ function parseProperties(results: unknown): NotionPropertyRef[] {
   return list;
 }
 
+function isAnchorType(type: NotionPropertyType) {
+  return type === "date" || type === "created_time" || type === "last_edited_time";
+}
+
 export function StepProperties({
   config,
   setConfig,
@@ -149,6 +153,11 @@ export function StepProperties({
         ...prev,
         [databaseId]: { ...prev[databaseId], loading: false, error: "", properties },
       }));
+
+      const anchors = properties.filter((p) => isAnchorType(p.type));
+      if (anchors.length === 1) {
+        setAnchorDateProperty(databaseId, anchors[0]!.name, { force: false });
+      }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
       setPropertyStateByDbId((prev) => ({
@@ -172,6 +181,17 @@ export function StepProperties({
     }));
   }
 
+  function setAnchorDateProperty(databaseId: string, propertyName: string, opts?: { force?: boolean }) {
+    setConfig((prev) => ({
+      ...prev,
+      source_databases: prev.source_databases.map((db) => {
+        if (db.database_id !== databaseId) return db;
+        if (!opts?.force && db.anchor_date_property.trim()) return db;
+        return { ...db, anchor_date_property: propertyName };
+      }),
+    }));
+  }
+
   return (
     <div className="space-y-4">
       <Callout emoji="🧩" title="Pick input properties" isDark={isDark}>
@@ -188,6 +208,9 @@ export function StepProperties({
         {config.source_databases.map((db, idx) => {
           const dbId = db.database_id.trim();
           const state = dbId ? propertyStateByDbId[dbId] : undefined;
+
+          const anchorCandidates = (state?.properties ?? []).filter((p) => isAnchorType(p.type));
+          const contentCandidates = (state?.properties ?? []).filter((p) => !isAnchorType(p.type));
 
           return (
             <div key={`${db.database_id}-${idx}`} className={cx("rounded-xl border p-4", isDark ? "border-white/10" : "border-zinc-200")}>
@@ -254,10 +277,44 @@ export function StepProperties({
                   )}
 
                   {(state?.properties ?? []).length > 0 && (
+                    <div className={cx("rounded-lg border p-3", isDark ? "border-white/10 bg-black/20" : "border-zinc-200 bg-white")}>
+                      <div className={cx("text-sm font-medium", t.heading)}>Filter this database by:</div>
+
+                      {anchorCandidates.length === 0 ? (
+                        <div className={cx("mt-2 text-sm", t.subtleText)}>No date/created/edited time properties found.</div>
+                      ) : anchorCandidates.length === 1 ? (
+                        <div className={cx("mt-2 text-sm", t.subtleText)}>
+                          Filtering by: <span className={t.heading}>{anchorCandidates[0]!.name}</span>
+                        </div>
+                      ) : (
+                        <select
+                          className={cx(
+                            "mt-2 w-full rounded-lg border px-3 py-2 text-sm",
+                            isDark ? "bg-black/30 border-white/10 text-zinc-100" : "bg-white border-zinc-200 text-zinc-900",
+                          )}
+                          value={db.anchor_date_property ?? ""}
+                          onChange={(e) => setAnchorDateProperty(dbId, e.target.value, { force: true })}
+                        >
+                          <option value="">(No date filter)</option>
+                          {anchorCandidates.map((p) => (
+                            <option key={p.key} value={p.name}>
+                              {p.name} [{p.type}]
+                            </option>
+                          ))}
+                        </select>
+                      )}
+
+                      <div className={cx("mt-2 text-xs", t.subtleText)}>
+                        Date properties are used only for runtime filtering and are not included in the main content input.
+                      </div>
+                    </div>
+                  )}
+
+                  {contentCandidates.length > 0 && (
                     <div className="mt-2">
                       <div className={cx("text-sm font-medium", t.heading)}>Properties</div>
                       <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
-                        {state!.properties.map((p) => {
+                        {contentCandidates.map((p) => {
                           const checked = db.selected_properties.some((sp) => sp.name === p.name && sp.type === p.type);
                           return (
                             <label

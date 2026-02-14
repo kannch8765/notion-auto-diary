@@ -18,7 +18,14 @@ export function StepDatabases({
       ...prev,
       source_databases: [
         ...prev.source_databases,
-        { database_id: "", nickname: "", selected_properties: [], enabled: true },
+        {
+          database_id: "",
+          nickname: "",
+          selected_properties: [],
+          enabled: true,
+          include_page_content: false,
+          anchor_date_property: "",
+        },
       ],
     }));
   }
@@ -94,6 +101,19 @@ export function StepDatabases({
               <div className={cx("text-sm", t.subtleText)}>Enabled</div>
             </div>
 
+            <div className="mt-3 flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={db.include_page_content}
+                onChange={(e) => upsert(idx, (d) => ({ ...d, include_page_content: e.target.checked }))}
+                className={cx(
+                  "h-4 w-4 rounded border",
+                  isDark ? "border-white/20 bg-black/30" : "border-zinc-300 bg-white",
+                )}
+              />
+              <div className={cx("text-sm", t.subtleText)}>Include Page Content</div>
+            </div>
+
             <div className={cx("mt-3 text-xs", t.subtleText)}>Properties are selected in the next step.</div>
           </div>
         ))}
@@ -105,4 +125,3 @@ export function StepDatabases({
     </div>
   );
 }
-

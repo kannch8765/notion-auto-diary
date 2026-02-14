@@ -12,6 +12,8 @@ export interface SourceDatabaseConfig {
   nickname: string;
   selected_properties: SelectedPropertyConfig[];
   enabled: boolean;
+  include_page_content: boolean;
+  anchor_date_property: string;
 }
 
 export interface OutputDatabaseIds {
@@ -25,4 +27,3 @@ export interface AppConfig {
   output_database_ids: OutputDatabaseIds;
   source_databases: SourceDatabaseConfig[];
 }
-
